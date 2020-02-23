@@ -3,52 +3,18 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include "imgProcess.h"
 
 using namespace cv;
 using namespace std;
 
-int findRowMiddle(Mat img, int rowBegin)
-{
-	// edgeRowNum 存储第一个空白行，和空白行后第一个非空白行
-	int edgeRowNum[2] = { 0,0 };
-	int elementNum;
-	bool firstWhite = false, firstBlack = false;
-	int midNumRow = 0;
-
-	for (int i = 70; i < img.rows; i++)
-	{
-		long totalSize = 0;
-		for (int j = 0; j < img.cols; j++)
-		{
-			totalSize += int(img.at<unsigned char>(i, j));
-		}
-
-
-		if (totalSize == (img.step.buf[0] * 255) && !firstWhite)
-		{
-			edgeRowNum[0] = i;
-			firstWhite = true;
-		}
-		if (totalSize != (img.step.buf[0] * 255) && firstWhite)
-		{
-			edgeRowNum[1] = i;
-			firstBlack = true;
-			break;
-		}
-	}
-
-	if (firstWhite && firstBlack)
-	{
-		midNumRow = (edgeRowNum[0] + edgeRowNum[1]) / 2;
-	}
-
-	return midNumRow;
-}
 
 int main()
 {
 	Mat src_img = imread("D:/self_study/exampleForOpenCV/pictureSource/source1.bmp", 1);
 	if (src_img.empty()) return -1;
+
+	IMGPROCESS imgProcess;
 
 	Mat gray_img;
 	cvtColor(src_img, gray_img, COLOR_BGR2GRAY);
@@ -61,7 +27,30 @@ int main()
 	threshold(gray_img, gray_img, 80, 255, THRESH_BINARY_INV);
 
 	// 70 只是确定一个首行就是有字的，可以设置其它，只要包含字
-	int midNumRow = findRowMiddle(gray_img, 70);
+	int midNumRow = imgProcess.findRowMiddle(gray_img, 70);
+
+	// 找到第一行的空白列，第二行的空白列
+	int firstBlankCol[500], secondBlankCol[500];
+	memset(firstBlankCol, 0, sizeof(firstBlankCol));
+	memset(secondBlankCol, 0, sizeof(secondBlankCol));
+
+	imgProcess.findBlankCol(gray_img, midNumRow, firstBlankCol, secondBlankCol);
+	
+	// 分割第一行的数字
+	int firstRowRealEdge[30], secondRowRealEdge[30]; // 30 只是估计，因为一个数字有两个边界
+	memset(firstRowRealEdge, 0, sizeof(firstRowRealEdge));
+	memset(secondRowRealEdge, 0, sizeof(secondRowRealEdge));
+	int count = 0;
+	for (int i = 0; i < sizeof(firstBlankCol)/sizeof(int) -1; i++)
+	{
+		if (firstBlankCol[i] + 1 != firstBlankCol[i + 1])
+		{
+			firstRowRealEdge[count] = firstBlankCol[i];
+			++count;
+			firstRowRealEdge[count] = firstBlankCol[i+1];
+			++count;
+		}
+	}
 
 	return 0;
 }
