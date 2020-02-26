@@ -83,4 +83,21 @@ void IMGPROCESS::findBlankCol(Mat img, int MidRowNum, int* firstColArray, int* s
 	}
 }
 
+void IMGPROCESS::spliteCharacter(int* firstBlankCol, int* firstRowRealEdge, int blankSize)
+{
+	int count = 0;
+	for (int i = 0; i < blankSize - 1; i++)
+	{
+		if (firstBlankCol[i] + 1 < firstBlankCol[i + 1])
+		{
+			firstRowRealEdge[count] = firstBlankCol[i];
+			std::cout << firstRowRealEdge[count] << " ";
+			++count;
+			firstRowRealEdge[count] = firstBlankCol[i + 1];
+			std::cout << firstRowRealEdge[count] << " ";
+			++count;
+		}
+	}
+}
+
 

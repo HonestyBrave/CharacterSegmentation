@@ -30,27 +30,43 @@ int main()
 	int midNumRow = imgProcess.findRowMiddle(gray_img, 70);
 
 	// 找到第一行的空白列，第二行的空白列
-	int firstBlankCol[500], secondBlankCol[500];
+	const int blankSize = 500;
+	int firstBlankCol[blankSize], secondBlankCol[blankSize];
 	memset(firstBlankCol, 0, sizeof(firstBlankCol));
 	memset(secondBlankCol, 0, sizeof(secondBlankCol));
 
 	imgProcess.findBlankCol(gray_img, midNumRow, firstBlankCol, secondBlankCol);
 	
 	// 分割第一行的数字
-	int firstRowRealEdge[30], secondRowRealEdge[30]; // 30 只是估计，因为一个数字有两个边界
+	const int edgeSize = 30;
+	int firstRowRealEdge[edgeSize], secondRowRealEdge[edgeSize]; // 30 只是估计，因为一个数字有两个边界
+	//int* firstRowRealEdge = (int*)malloc(sizeof(int) * 30);
 	memset(firstRowRealEdge, 0, sizeof(firstRowRealEdge));
 	memset(secondRowRealEdge, 0, sizeof(secondRowRealEdge));
-	int count = 0;
-	for (int i = 0; i < sizeof(firstBlankCol)/sizeof(int) -1; i++)
+	imgProcess.spliteCharacter(firstBlankCol, firstRowRealEdge, blankSize);
+	imgProcess.spliteCharacter(secondBlankCol, secondRowRealEdge, blankSize);
+
+	Mat firstCharacterMat[30];
+	for (int i = 0; i < edgeSize && (firstRowRealEdge[i] < firstRowRealEdge[i+1]); i+=2)
 	{
-		if (firstBlankCol[i] + 1 != firstBlankCol[i + 1])
-		{
-			firstRowRealEdge[count] = firstBlankCol[i];
-			++count;
-			firstRowRealEdge[count] = firstBlankCol[i+1];
-			++count;
-		}
+		firstCharacterMat[i] = gray_img(Range(0, midNumRow), Range(firstRowRealEdge[i], firstRowRealEdge[i + 1]));
+		std::ostringstream t;
+		t << i;
+		std::string filePath = "D:/self_study/exampleForOpenCV/pictureSource/characterPicture/" + t.str() + ".bmp";
+		imwrite(filePath.c_str(), firstCharacterMat[i]);
 	}
 
+	Mat secondCharacterMat[30];
+	for (int i = 0; i < edgeSize && (secondRowRealEdge[i] < secondRowRealEdge[i + 1]); i += 2)
+	{
+		secondCharacterMat[i] = gray_img(Range(0, midNumRow), Range(secondRowRealEdge[i], secondRowRealEdge[i + 1]));
+		std::ostringstream t;
+		t << i;
+		t << i;
+		std::string filePath = "D:/self_study/exampleForOpenCV/pictureSource/characterPicture/" + t.str() + ".bmp";
+		imwrite(filePath.c_str(), secondCharacterMat[i]);
+	}
+	
+	cv::waitKey(0);
 	return 0;
 }
