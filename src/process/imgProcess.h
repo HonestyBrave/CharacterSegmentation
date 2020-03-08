@@ -16,7 +16,7 @@ public:
 	int findRowMiddle(Mat img, int rowBegin);
 	void findBlankCol(Mat img, int MidRowNum, int* firstColArray, int* secondColArray);
 	void spliteCharacter(int* characterBuff, int* firstRowRealEdge, int blankSize);
-	void saveSpliteCharacter(Mat gray_img, int edgeSize, int midNumRow, int* firstRowRealEdge, int* secondRowRealEdge);
+	void saveSpliteCharacter(Mat gray_img, int edgeSize, int midNumRow, int* firstRowRealEdge, int* secondRowRealEdge, string fileDirPath);
 
 private:
 	int midRow;

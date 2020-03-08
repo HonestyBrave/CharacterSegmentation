@@ -21,7 +21,7 @@ int IMGPROCESS::findRowMiddle(Mat img, int rowBegin)
 	int elementNum;
 	bool firstWhite = false, firstBlack = false;
 	int midNumRow = 0;
-
+	int maxDiff = 0;
 	for (int i = 70; i < img.rows; i++)
 	{
 		long totalSize = 0;
@@ -40,13 +40,19 @@ int IMGPROCESS::findRowMiddle(Mat img, int rowBegin)
 		{
 			edgeRowNum[1] = i;
 			firstBlack = true;
-			break;
 		}
-	}
 
-	if (firstWhite && firstBlack)
-	{
-		midNumRow = (edgeRowNum[0] + edgeRowNum[1]) / 2;
+		if (firstWhite && firstBlack)
+		{
+			firstWhite = false;
+			firstBlack = false;
+			int diff = edgeRowNum[1] - edgeRowNum[0];
+			if (diff > maxDiff)
+			{
+				midNumRow = (edgeRowNum[0] + edgeRowNum[1]) / 2;
+				maxDiff = diff;
+			}
+		}
 	}
 	midRow = midNumRow;
 	return midNumRow;
@@ -105,29 +111,29 @@ void IMGPROCESS::spliteCharacter(int* firstBlankCol, int* firstRowRealEdge, int 
 }
 
 
-void IMGPROCESS::saveSpliteCharacter(Mat gray_img, int edgeSize, int midNumRow, int* firstRowRealEdge, int* secondRowRealEdge)
+void IMGPROCESS::saveSpliteCharacter(Mat gray_img, int edgeSize, int midNumRow, int* firstRowRealEdge, int* secondRowRealEdge, string fileDirPath)
 {
 	Mat firstCharacterMat;
 	static int characterNum = 0;
-	for (int i = 0; i < edgeSize && (firstRowRealEdge[i] < firstRowRealEdge[i + 1]); i += 2)
+	for (int i = 0; i < edgeSize - 1 && (firstRowRealEdge[i] < firstRowRealEdge[i + 1]); i += 2)
 	{
 		firstCharacterMat = gray_img(Range(0, midNumRow), Range(firstRowRealEdge[i], firstRowRealEdge[i + 1]));
-		resize(firstCharacterMat, firstCharacterMat, Size(53, 138));
+		//resize(firstCharacterMat, firstCharacterMat, Size(53, 138));
 		std::ostringstream t;
 		t << characterNum;
-		std::string filePath = filePathdir + t.str() + ".bmp";
+		std::string filePath = fileDirPath + "/"+ t.str() + ".bmp";
 		imwrite(filePath.c_str(), firstCharacterMat);
 		characterNum++;
 	}
 
 	Mat secondCharacterMat;
-	for (int i = 0; i < edgeSize && (secondRowRealEdge[i] < secondRowRealEdge[i + 1]); i += 2)
+	for (int i = 0; i < edgeSize - 1 && (secondRowRealEdge[i] < secondRowRealEdge[i + 1]); i += 2)
 	{
 		secondCharacterMat = gray_img(Range(midNumRow, gray_img.rows), Range(secondRowRealEdge[i], secondRowRealEdge[i + 1]));
-		resize(secondCharacterMat, secondCharacterMat, Size(53, 138));
+		//resize(secondCharacterMat, secondCharacterMat, Size(53, 138));
 		std::ostringstream t;
 		t << characterNum;
-		std::string filePath = filePathdir + t.str() + ".bmp";
+		std::string filePath = fileDirPath + "/" + t.str() + ".bmp";
 		imwrite(filePath.c_str(), secondCharacterMat);
 		characterNum++;
 	}
