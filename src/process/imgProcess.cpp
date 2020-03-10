@@ -110,32 +110,100 @@ void IMGPROCESS::spliteCharacter(int* firstBlankCol, int* firstRowRealEdge, int 
 	}
 }
 
-
-void IMGPROCESS::saveSpliteCharacter(Mat gray_img, int edgeSize, int midNumRow, int* firstRowRealEdge, int* secondRowRealEdge, string fileDirPath)
+void IMGPROCESS::saveSpliteCharacter(Mat gray_img, int edgeSize, int midNumRow, int* firstColRealEdge, int* secondColRealEdge, string fileDirPath)
 {
 	Mat firstCharacterMat;
 	static int characterNum = 0;
-	for (int i = 0; i < edgeSize - 1 && (firstRowRealEdge[i] < firstRowRealEdge[i + 1]); i += 2)
+	for (int i = 0; i < edgeSize - 1 && (firstColRealEdge[i] < firstColRealEdge[i + 1]); i += 2)
 	{
-		firstCharacterMat = gray_img(Range(0, midNumRow), Range(firstRowRealEdge[i], firstRowRealEdge[i + 1]));
-		//resize(firstCharacterMat, firstCharacterMat, Size(53, 138));
-		std::ostringstream t;
-		t << characterNum;
-		std::string filePath = fileDirPath + "/"+ t.str() + ".bmp";
-		imwrite(filePath.c_str(), firstCharacterMat);
+		if (firstColRealEdge[i + 1] - firstColRealEdge[i] >= 100)
+		{
+			int rowBegin = 0;
+			doubleCharacterSplit(gray_img, rowBegin, midNumRow, firstColRealEdge[i], firstColRealEdge[i + 1], characterNum, fileDirPath);
+		}
+		else
+		{
+			firstCharacterMat = gray_img(Range(0, midNumRow), Range(firstColRealEdge[i], firstColRealEdge[i + 1]));
+			//resize(firstCharacterMat, firstCharacterMat, Size(53, 138));
+			std::ostringstream t;
+			t << characterNum;
+			std::string filePath = fileDirPath + "/" + t.str() + ".bmp";
+			imwrite(filePath.c_str(), firstCharacterMat);
+		}
 		characterNum++;
 	}
 
 	Mat secondCharacterMat;
-	for (int i = 0; i < edgeSize - 1 && (secondRowRealEdge[i] < secondRowRealEdge[i + 1]); i += 2)
+	for (int i = 0; i < edgeSize - 1 && (secondColRealEdge[i] < secondColRealEdge[i + 1]); i += 2)
 	{
-		secondCharacterMat = gray_img(Range(midNumRow, gray_img.rows), Range(secondRowRealEdge[i], secondRowRealEdge[i + 1]));
-		//resize(secondCharacterMat, secondCharacterMat, Size(53, 138));
-		std::ostringstream t;
-		t << characterNum;
-		std::string filePath = fileDirPath + "/" + t.str() + ".bmp";
-		imwrite(filePath.c_str(), secondCharacterMat);
+		if (secondColRealEdge[i + 1] - secondColRealEdge[i] >= 100)
+		{
+			int rowBegin = 0;
+			doubleCharacterSplit(gray_img, midNumRow, gray_img.rows, secondColRealEdge[i], secondColRealEdge[i + 1], characterNum, fileDirPath);
+		}
+		else
+		{
+			secondCharacterMat = gray_img(Range(midNumRow, gray_img.rows), Range(secondColRealEdge[i], secondColRealEdge[i + 1]));
+			//resize(secondCharacterMat, secondCharacterMat, Size(53, 138));
+			std::ostringstream t;
+			t << characterNum;
+			std::string filePath = fileDirPath + "/" + t.str() + ".bmp";
+			imwrite(filePath.c_str(), secondCharacterMat);
+		}
 		characterNum++;
 	}
 }
 
+int IMGPROCESS::doubleCharacterSplit(Mat gray_img, int rowBegin, int rowEnd, int firstColRealEdgeOne, int firstColRealEdgeTwo, int& characterNum, string fileDirPath)
+{
+	Mat doubleCharacterMat = gray_img(Range(rowBegin, rowEnd), Range(firstColRealEdgeOne, firstColRealEdgeTwo));
+	int colNum = firstColRealEdgeTwo - firstColRealEdgeOne + 1;
+	//int* perColPixel = new int[firstColRealEdgeTwo +1]; // 因为需要用到下标，下标对应行，且下标取到firstRowRealEdgeTwo
+	int* perColPixel = new int[gray_img.cols + 1];
+	//int perColPixel[847 + 1];
+	memset(perColPixel, 0, sizeof(int)*(gray_img.cols + 1));
+	for (int col = firstColRealEdgeOne; col <= firstColRealEdgeTwo; col++)
+	{
+		long totalPerColPixel = 0;
+		for (int row = rowBegin; row < rowEnd; row++)
+		{
+			if (gray_img.at<unsigned char>(row, col) == 0) 
+				totalPerColPixel += 1;
+		}
+		perColPixel[col] = totalPerColPixel;
+	}
+	int minColPixel = perColPixel[firstColRealEdgeOne + 10]; //因为在图片最初的地方，像素最少，所以这里把前后都从+10和减10列开始
+	int midColNum = firstColRealEdgeOne + 10; //初始化
+	for (int i = firstColRealEdgeOne + 11; i < firstColRealEdgeTwo - 10; i++)
+	{
+		if (perColPixel[i] < minColPixel)
+		{
+			minColPixel = perColPixel[i];
+			midColNum = i;
+		}
+	}
+
+	Mat firstCharacterMat = gray_img(Range(rowBegin, rowEnd), Range(firstColRealEdgeOne, midColNum));
+	std::ostringstream t;
+	t << characterNum;
+	std::string filePath = fileDirPath + "/" + t.str() + ".bmp";
+	imwrite(filePath.c_str(), firstCharacterMat);
+	characterNum++;
+
+	Mat secondCharacterMat = gray_img(Range(rowBegin, rowEnd), Range(midColNum, firstColRealEdgeTwo));
+	Mat element = getStructuringElement(MORPH_RECT, Size(5, 5)); // 因为分隔后有一些独立的像素点，需要去除掉
+	
+	Mat tempSecondMat;
+	dilate(secondCharacterMat, tempSecondMat, element);
+	
+	erode(tempSecondMat, tempSecondMat, element);
+
+	//morphologyEx(secondCharacterMat, tempSecondMat, MORPH_CLOSE, element);
+	t.str("");
+	t << characterNum;
+	filePath = fileDirPath + "/" + t.str() + ".bmp";
+	imwrite(filePath.c_str(), tempSecondMat);
+	characterNum++;
+
+	return midColNum;
+}

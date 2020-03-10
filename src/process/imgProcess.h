@@ -17,9 +17,10 @@ public:
 	void findBlankCol(Mat img, int MidRowNum, int* firstColArray, int* secondColArray);
 	void spliteCharacter(int* characterBuff, int* firstRowRealEdge, int blankSize);
 	void saveSpliteCharacter(Mat gray_img, int edgeSize, int midNumRow, int* firstRowRealEdge, int* secondRowRealEdge, string fileDirPath);
-
+	int doubleCharacterSplit(Mat gray_img, int rowBegin, int rowEnd, int firstRowRealEdgeOne, int firstRowRealEdgeTwo, int& characterNum, string fileDirPath);
 private:
 	int midRow;
+	int midCol; // 用于分割两个字连在一起
 	string filePathdir;
 };	
 
