@@ -25,13 +25,13 @@ int main()
 
 		Mat gray_img;
 		cvtColor(src_img, gray_img, COLOR_BGR2GRAY);
-		threshold(gray_img, gray_img, 80, 255, THRESH_BINARY_INV);
+		threshold(gray_img, gray_img, 100, 255, THRESH_BINARY_INV);
 
 		Mat element = getStructuringElement(MORPH_RECT, Size(5, 5)); 
 		//第一个参数MORPH_RECT表示矩形的卷积核，当然还可以选择椭圆形的、交叉型的
 		morphologyEx(gray_img, gray_img, MORPH_OPEN, element);
 
-		threshold(gray_img, gray_img, 80, 255, THRESH_BINARY_INV);
+		threshold(gray_img, gray_img, 0, 255, THRESH_BINARY_INV); //继续反转
 
 		// 70 只是确定一个首行就是有字的，可以设置其它，只要包含字
 		int midNumRow = imgProcess.findRowMiddle(gray_img, 70);
