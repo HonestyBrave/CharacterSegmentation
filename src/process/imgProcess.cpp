@@ -172,9 +172,9 @@ int IMGPROCESS::doubleCharacterSplit(Mat gray_img, int rowBegin, int rowEnd, int
 		}
 		perColPixel[col] = totalPerColPixel;
 	}
-	int minColPixel = perColPixel[firstColRealEdgeOne + 10]; //因为在图片最初的地方，像素最少，所以这里把前后都从+10和减10列开始
-	int midColNum = firstColRealEdgeOne + 10; //初始化
-	for (int i = firstColRealEdgeOne + 11; i < firstColRealEdgeTwo - 10; i++)
+	int minColPixel = perColPixel[firstColRealEdgeOne + 30]; //因为在图片最初的地方，像素最少，所以这里把前后都从+10和减10列开始
+	int midColNum = firstColRealEdgeOne + 30; //初始化
+	for (int i = firstColRealEdgeOne + 31; i < firstColRealEdgeTwo - 30; i++)
 	{
 		if (perColPixel[i] < minColPixel)
 		{
