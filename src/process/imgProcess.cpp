@@ -6,6 +6,8 @@ using namespace std;
 
 IMGPROCESS::IMGPROCESS()
 {
+	resizeWidth = 30; // 用于分割的字符resize 的 width
+	resizeHeight = 90; // 用于分割的字符resize 的 height
 	filePathdir = "D:/self_study/exampleForOpenCV/pictureSource/characterPicture/";
 }
 
@@ -124,11 +126,7 @@ void IMGPROCESS::saveSpliteCharacter(Mat gray_img, int edgeSize, int midNumRow, 
 		else
 		{
 			firstCharacterMat = gray_img(Range(0, midNumRow), Range(firstColRealEdge[i], firstColRealEdge[i + 1]));
-			//resize(firstCharacterMat, firstCharacterMat, Size(53, 138));
-			std::ostringstream t;
-			t << characterNum;
-			std::string filePath = fileDirPath + "/" + t.str() + ".bmp";
-			imwrite(filePath.c_str(), firstCharacterMat);
+			saveSplitPicture(firstCharacterMat, fileDirPath);
 		}
 		characterNum++;
 	}
@@ -144,11 +142,7 @@ void IMGPROCESS::saveSpliteCharacter(Mat gray_img, int edgeSize, int midNumRow, 
 		else
 		{
 			secondCharacterMat = gray_img(Range(midNumRow, gray_img.rows), Range(secondColRealEdge[i], secondColRealEdge[i + 1]));
-			//resize(secondCharacterMat, secondCharacterMat, Size(53, 138));
-			std::ostringstream t;
-			t << characterNum;
-			std::string filePath = fileDirPath + "/" + t.str() + ".bmp";
-			imwrite(filePath.c_str(), secondCharacterMat);
+			saveSplitPicture(secondCharacterMat, fileDirPath);
 		}
 		characterNum++;
 	}
@@ -184,11 +178,7 @@ int IMGPROCESS::doubleCharacterSplit(Mat gray_img, int rowBegin, int rowEnd, int
 	}
 
 	Mat firstCharacterMat = gray_img(Range(rowBegin, rowEnd), Range(firstColRealEdgeOne, midColNum));
-	std::ostringstream t;
-	t << characterNum;
-	std::string filePath = fileDirPath + "/" + t.str() + ".bmp";
-	imwrite(filePath.c_str(), firstCharacterMat);
-	characterNum++;
+	saveSplitPicture(firstCharacterMat, fileDirPath);
 
 	Mat secondCharacterMat = gray_img(Range(rowBegin, rowEnd), Range(midColNum, firstColRealEdgeTwo));
 	Mat element = getStructuringElement(MORPH_RECT, Size(5, 5)); // 因为分隔后有一些独立的像素点，需要去除掉
@@ -199,11 +189,19 @@ int IMGPROCESS::doubleCharacterSplit(Mat gray_img, int rowBegin, int rowEnd, int
 	erode(tempSecondMat, tempSecondMat, element);
 
 	//morphologyEx(secondCharacterMat, tempSecondMat, MORPH_CLOSE, element);
-	t.str("");
-	t << characterNum;
-	filePath = fileDirPath + "/" + t.str() + ".bmp";
-	imwrite(filePath.c_str(), tempSecondMat);
-	characterNum++;
+	saveSplitPicture(firstCharacterMat, fileDirPath);
 
 	return midColNum;
+}
+
+void IMGPROCESS::saveSplitPicture(const Mat& img, const string& savePath)
+{
+	static int picNUm = 0;
+	Mat resize_mat;
+	resize(img, resize_mat, Size(resizeWidth, resizeHeight));
+	std::ostringstream numStr;
+	numStr << picNUm;
+	std::string fileAbsPath = savePath + "/" + numStr.str() + ".bmp";
+	imwrite(fileAbsPath.c_str(), resize_mat);
+	picNUm++;
 }

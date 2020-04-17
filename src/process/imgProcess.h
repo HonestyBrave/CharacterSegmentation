@@ -18,10 +18,13 @@ public:
 	void spliteCharacter(int* characterBuff, int* firstRowRealEdge, int blankSize);
 	void saveSpliteCharacter(Mat gray_img, int edgeSize, int midNumRow, int* firstRowRealEdge, int* secondRowRealEdge, string fileDirPath);
 	int doubleCharacterSplit(Mat gray_img, int rowBegin, int rowEnd, int firstRowRealEdgeOne, int firstRowRealEdgeTwo, int& characterNum, string fileDirPath);
+	void IMGPROCESS::saveSplitPicture(const Mat& gray_img, const string& savePath);
 private:
 	int midRow;
 	int midCol; // 用于分割两个字连在一起
 	string filePathdir;
+	int resizeWidth;
+	int resizeHeight;
 };	
 
 

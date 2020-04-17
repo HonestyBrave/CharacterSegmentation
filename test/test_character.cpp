@@ -10,18 +10,24 @@
 using namespace cv;
 using namespace std;
 
+const string saveFileDir = "D:/self_study/exampleForOpenCV/pictureSource/sourcePicture/source_";
+const string sourceDir = "D:/self_study/exampleForOpenCV/pictureSource/sourcePicture/source";
+
 
 int main()
 {
-	string fileDir = "D:/self_study/exampleForOpenCV/pictureSource/sourcePicture/source_";
 	for (int fileNum = 1; fileNum <= 100; fileNum++)
 	{
-		string filePath = "D:/self_study/exampleForOpenCV/pictureSource/sourcePicture/source" + to_string(fileNum) + ".bmp";
-		Mat src_img = imread(filePath, 1);
+		string sourceFilePath = sourceDir + to_string(fileNum) + ".bmp";
+		Mat src_img = imread(sourceFilePath, 1);
 
 		if (src_img.empty()) return -1;
 
 		IMGPROCESS imgProcess;
+
+		// ¾ùÖµÂË²¨
+		Mat blur_mat;
+		blur(src_img, blur_mat, Size(5, 5));
 
 		Mat gray_img;
 		cvtColor(src_img, gray_img, COLOR_BGR2GRAY);
@@ -55,7 +61,7 @@ int main()
 		static int fileName = 1;
 		ostringstream dirName;
 		dirName << fileName;
-		string fileDirPath = fileDir + dirName.str();
+		string fileDirPath = saveFileDir + dirName.str();
 		dirName.str("");
 		if (_access(fileDirPath.c_str(), 0) == -1)
 		{
