@@ -21,7 +21,7 @@ int main()
 		string sourceFilePath = sourceDir + to_string(fileNum) + ".bmp";
 		Mat src_img = imread(sourceFilePath, 1);
 
-		if (src_img.empty()) return -1;
+		if (src_img.empty()) continue;
 
 		IMGPROCESS imgProcess;
 
@@ -33,7 +33,7 @@ int main()
 		cvtColor(src_img, gray_img, COLOR_BGR2GRAY);
 		threshold(gray_img, gray_img, 100, 255, THRESH_BINARY_INV);
 
-		Mat element = getStructuringElement(MORPH_RECT, Size(5, 5)); 
+		Mat element = getStructuringElement(MORPH_RECT, Size(3, 3)); 
 		//第一个参数MORPH_RECT表示矩形的卷积核，当然还可以选择椭圆形的、交叉型的
 		morphologyEx(gray_img, gray_img, MORPH_OPEN, element);
 
@@ -43,7 +43,7 @@ int main()
 		int midNumRow = imgProcess.findRowMiddle(gray_img, 70);
 
 		// 找到第一行的空白列，第二行的空白列
-		const int blankSize = 900; //太小会越界
+		const int blankSize = 1000; //太小会越界
 		int firstBlankCol[blankSize], secondBlankCol[blankSize];
 		memset(firstBlankCol, 0, sizeof(firstBlankCol));
 		memset(secondBlankCol, 0, sizeof(secondBlankCol));
@@ -61,7 +61,7 @@ int main()
 		static int fileName = 1;
 		ostringstream dirName;
 		dirName << fileName;
-		string fileDirPath = saveFileDir + dirName.str();
+		string fileDirPath = saveFileDir;// +dirName.str();
 		dirName.str("");
 		if (_access(fileDirPath.c_str(), 0) == -1)
 		{
