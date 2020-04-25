@@ -198,7 +198,9 @@ void IMGPROCESS::saveSplitPicture(const Mat& img, const string& savePath)
 {
 	static int picNUm = 0;
 	Mat resize_mat;
-	resize(img, resize_mat, Size(resizeWidth, resizeHeight));
+	//使用象素关系重采样。当图像缩小时候，该方法可以避免波纹出现 
+	// 以上注释来自于 https://www.cnblogs.com/chenzhefan/p/7629441.html
+	resize(img, resize_mat, Size(resizeWidth, resizeHeight), INTER_AREA);
 	std::ostringstream numStr;
 	numStr << picNUm;
 	std::string fileAbsPath = savePath + "/" + numStr.str() + ".bmp";
