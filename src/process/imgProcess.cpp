@@ -2,6 +2,8 @@
 #include <opencv2/ml.hpp>
 #include <io.h>
 
+// 一些参数讲解参考 https://www.cnblogs.com/ronny/p/opencv_road_more_01.html#commentform
+
 using namespace ml;
 
 IMGPROCESS::IMGPROCESS()
