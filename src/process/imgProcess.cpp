@@ -264,6 +264,7 @@ void IMGPROCESS::train()
 	{
 		for (int j = 0; j < perClassNum; j++)
 		{
+			// 比如0-9类别，9的类别为 label = [0,0,0,0,0,0,0,0,0,1]，其它类别以此类推
 			labels[i*perClassNum + j][i] = 1;
 		}
 	}
