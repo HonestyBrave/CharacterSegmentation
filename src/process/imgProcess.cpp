@@ -270,6 +270,8 @@ void IMGPROCESS::train()
 	}
 
 	Ptr<ml::ANN_MLP> bp = ml::ANN_MLP::create();
+	// layerSizes:一个整型的数组，这里面用Mat存储。它是一个1*N的Mat，N代表神经网络的层数，第i列的值表示第i层的结点数。这里需要注意的是，在创建这个Mat时，一定要是整型的，uchar和float型都会报错。
+	// 参考 https://www.cnblogs.com/ronny/p/opencv_road_more_01.html#commentform
 	Mat layerSizes = (Mat_<int>(1, 5) << resizeWidth * resizeHeight, 128, 128, 128, classNum);
 	bp->setLayerSizes(layerSizes);
 	bp->setTrainMethod(ml::ANN_MLP::BACKPROP, 0.001, 0.1);
