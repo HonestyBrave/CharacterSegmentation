@@ -16,14 +16,17 @@ const string sourceDir = "D:/self_study/exampleForOpenCV/pictureSource/sourcePic
 
 int main()
 {
+	IMGPROCESS imgProcess;
+	imgProcess.train();
+
+	//IMGPROCESS imgProcess;
+
 	for (int fileNum = 1; fileNum <= 100; fileNum++)
 	{
 		string sourceFilePath = sourceDir + to_string(fileNum) + ".bmp";
 		Mat src_img = imread(sourceFilePath, 1);
 
 		if (src_img.empty()) continue;
-
-		IMGPROCESS imgProcess;
 
 		// ¾ùÖµÂË²¨
 		Mat blur_mat;
@@ -70,5 +73,8 @@ int main()
 		imgProcess.saveSpliteCharacter(gray_img, edgeSize, midNumRow, firstRowRealEdge, secondRowRealEdge, fileDirPath);
 		fileName++;
 	}
+
+	imgProcess.predict();
+
 	return 0;
 }

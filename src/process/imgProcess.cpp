@@ -1,8 +1,8 @@
-#include"imgProcess.h"
+#include "imgProcess.h"
+#include <opencv2/ml.hpp>
+#include <io.h>
 
-
-using namespace cv;
-using namespace std;
+using namespace ml;
 
 IMGPROCESS::IMGPROCESS()
 {
@@ -204,4 +204,120 @@ void IMGPROCESS::saveSplitPicture(const Mat& img, const string& savePath)
 	std::string fileAbsPath = savePath + "/" + numStr.str() + ".bmp";
 	imwrite(fileAbsPath.c_str(), resize_mat);
 	picNUm++;
+}
+
+void IMGPROCESS::train()
+{
+	const string file_form = "*.bmp";
+	const string file_dir = "D:/self_study/exampleForOpenCV/pictureSource/train_data/";
+	const int classNum = 12; // 训练的种类
+	const int perClassNum = 50; // 每类样本的数量
+	const int img_width = 30;
+	const int img_height = 90;
+	static float training_data[classNum*perClassNum][img_width*img_height] = { {0} };
+	static float labels[classNum*perClassNum][classNum] = { {0} };
+	char temp[256];
+	string file_name, file_path;
+
+	for (int i = 0; i < classNum; i++)
+	{
+		int j = 0;
+		if (i == 3 || i == 6 || i == 9) continue;
+		if (i <= 9)
+		{
+			sprintf_s(temp, "%d", i);
+		}
+		else
+		{
+			string strTemp = "C";
+			if (i == 10) sprintf_s(temp, "%c", 67); //C
+			else if (i == 11) sprintf_s(temp, "%c", 76); //L
+			else if (i == 12) sprintf_s(temp, "%c", 77); //M
+			else if (i == 13) sprintf_s(temp, "%c", 75); //K
+		}
+		file_path = file_dir + temp + "/" + to_string(j) + ".bmp";
+		cout << "文件夹" << endl;
+
+		do
+		{
+			j++;
+			Mat src_img = imread(file_path, 0);
+			if (!src_img.data)
+			{
+				cout << file_path << " empty" << endl;
+			}
+			cout << "文件夹1" << file_dir + temp + "/" + to_string(j) + ".bmp" << endl;
+			Mat result;
+			for (int k = 0; k < img_width*img_height; k++)
+			{
+				training_data[i*perClassNum + (j - 1)][k] = (float)src_img.data[k];
+			}
+		} while (j < perClassNum);
+	}
+
+	Mat trainingDataMat(classNum*perClassNum, img_width*img_height, CV_32FC1, training_data);
+	Mat labelsMat(classNum*perClassNum, classNum, CV_32FC1, labels);
+
+	for (int i = 0; i < classNum; i++)
+	{
+		for (int j = 0; j < perClassNum; j++)
+		{
+			labels[i*perClassNum + j][i] = 1;
+		}
+	}
+
+	Ptr<ml::ANN_MLP> bp = ml::ANN_MLP::create();
+	Mat layerSizes = (Mat_<int>(1, 5) << resizeWidth * resizeHeight, 128, 128, 128, classNum);
+	bp->setLayerSizes(layerSizes);
+	bp->setTrainMethod(ml::ANN_MLP::BACKPROP, 0.001, 0.1);
+	bp->setActivationFunction(ml::ANN_MLP::SIGMOID_SYM, 1.0, 1.0);
+	bp->setTermCriteria(TermCriteria(TermCriteria::MAX_ITER | TermCriteria::EPS, 10000, 0.0001));
+	Ptr<TrainData> trainData = TrainData::create(trainingDataMat, ml::ROW_SAMPLE, labelsMat);
+	bool trained = bp->train(trainData);
+	bp->save("D:/self_study/exampleForOpenCV/MPLModel.xml");
+	cout << "training finish...bpModel.xml saved!" << endl;
+
+}
+
+void IMGPROCESS::predict()
+{
+	Ptr<ml::ANN_MLP> bp = ml::ANN_MLP::load("D:/self_study/exampleForOpenCV/MPLModel.xml");
+
+	const int img_width = 30;
+	const int img_height = 90;
+
+	Mat test, dst;
+	test = imread("D:/self_study/exampleForOpenCV/pictureSource/sourcePicture/9.bmp", 0);
+	if (test.empty())
+	{
+		cout << "test empty()" << endl;
+	}
+
+	Mat_<float> testMat(1, img_width*img_height);
+	for (int i = 0; i < img_width*img_height; i++)
+	{
+		testMat.at<float>(0, i) = (float)test.at<uchar>(i / 30, i % 30);
+	}
+
+	bp->predict(testMat, dst);
+	cout<< "testMat: \n" << testMat << "\n" << endl;
+	cout << "dst: \n" << dst << "\n" << endl;
+
+	double maxVal = 0;
+	Point maxLoc;
+	minMaxLoc(dst, NULL, &maxVal, NULL, &maxLoc);
+	char temp[256];
+	if (maxLoc.x <= 9)
+	{
+		sprintf_s(temp, "%d", maxLoc.x);
+	}
+	else
+	{
+		if (maxLoc.x == 10) sprintf_s(temp, "%c", 67);
+		else if (maxLoc.x == 11) sprintf_s(temp, "%c", 76);
+	}
+
+	cout << "测试结果：" << temp << " 置信度：" << maxVal * 100 << "%" << endl;
+
+	
 }
